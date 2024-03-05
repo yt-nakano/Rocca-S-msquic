@@ -202,10 +202,7 @@ $allTests["tput-down"] = "-exec:maxtput -down:12s -ptput:1"
 $allTests["hps-conns-100"] = "-exec:maxtput -rconn:1 -share:1 -conns:100 -run:12s -prate:1"
 $allTests["rps-up-512-down-4000"] = "-exec:lowlat -rstream:1 -up:512 -down:4000 -run:20s -plat:1"
 
-$envIDClient = "__CLIENT_ENV__"
-$envIDServer = "__SERVER_ENV__"
 $hasFailures = $false
-
 $json["run_args"] = $allTests
 
 function CheckRegressionTput($values, $testid, $transport, $regressionJson) {
@@ -218,6 +215,17 @@ function CheckRegressionTput($values, $testid, $transport, $regressionJson) {
     $avg = $sum / $values.Length
     $envStr = "$os-$arch-$environment-$io-$tls"
     $Testid = "$testid-$transport"
+
+    if (!$regressionJson.PSObject.Properties.Name -contains "$Testid") {
+        Write-Host "WARNING: The test id $Testid does not have regression baselines yet. Ignoring."
+        return $false
+    }
+
+    if ($regressionJson.$Testid.PSObject.Properties.Name -contains "$envStr") {
+        Write-Host "WARNING: The environment $envStr does not have regression baselines yet. Ignoring."
+        return $false
+    }
+
     $baseline = $regressionJson.$Testid.$envStr.baseline
     if ($avg -lt $baseline) {
         Write-GHError "Regression detected in $Testid for $envStr. Baseline: $baseline, New: $avg"
