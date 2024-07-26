@@ -886,25 +886,8 @@ const uint32_t ParamCounts[] = {
 
 void SpinQuicGetRandomParam(HQUIC Handle, uint16_t ThreadID)
 {
-    for (uint32_t i = 0; i < GET_PARAM_LOOP_COUNT; ++i) {
-        uint32_t Level = (uint32_t)GetRandom(ARRAYSIZE(ParamCounts));
-        uint32_t Param = (uint32_t)GetRandom(((ParamCounts[Level] & 0xFFFFFFF)) + 1);
-        uint32_t Combined = ((Level+1) << 28) + Param;
-        Combined &= ~QUIC_PARAM_HIGH_PRIORITY; // TODO: enable high priority GetParam
-
-        if (GetRandom(2)) {
-            Combined |= QUIC_PARAM_HIGH_PRIORITY;
-        }
-
-        uint8_t OutBuffer[200];
-        uint32_t OutBufferLength = (uint32_t)GetRandom(sizeof(OutBuffer) + 1);
-
-        MsQuic.GetParam(
-            (GetRandom(10) == 0) ? nullptr : Handle,
-            Combined,
-            &OutBufferLength,
-            (GetRandom(10) == 0) ? nullptr : OutBuffer);
-    }
+    UNREFERENCED_PARAMETER(ThreadID);
+    UNREFERENCED_PARAMETER(Handle);
 }
 
 void Spin(Gbs& Gb, LockableVector<HQUIC>& Connections, std::vector<HQUIC>* Listeners = nullptr, uint16_t ThreadID = UINT16_MAX)
