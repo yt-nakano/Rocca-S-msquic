@@ -52,6 +52,7 @@ EVP_CIPHER *CXPLAT_AES_128_ECB_ALG_HANDLE;
 EVP_CIPHER *CXPLAT_AES_256_ECB_ALG_HANDLE;
 EVP_CIPHER *CXPLAT_CHACHA20_ALG_HANDLE;
 EVP_CIPHER *CXPLAT_CHACHA20_POLY1305_ALG_HANDLE;
+EVP_CIPHER *CXPLAT_ROCCA_S_ALG_HANDLE;
 #ifdef IS_OPENSSL_3
 EVP_MAC_CTX *CXPLAT_HMAC_SHA256_CTX_HANDLE;
 EVP_MAC_CTX *CXPLAT_HMAC_SHA384_CTX_HANDLE;
@@ -174,6 +175,8 @@ CxPlatCryptInitialize(
         goto Error;
     }
 
+    CxPlatLoadCipher( "ROCCA-S", &CXPLAT_ROCCA_S_ALG_HANDLE );
+
     //
     // Load ChaCha20 ciphers if they exist.
     //
@@ -209,6 +212,7 @@ Error:
     CXPLAT_AES_256_CBC_ALG_HANDLE = (EVP_CIPHER *)EVP_aes_256_cbc();
     CXPLAT_AES_128_ECB_ALG_HANDLE = (EVP_CIPHER *)EVP_aes_128_ecb();
     CXPLAT_AES_256_ECB_ALG_HANDLE = (EVP_CIPHER *)EVP_aes_256_ecb();
+    CXPLAT_ROCCA_S_ALG_HANDLE = (EVP_CIPHER *)EVP_rocca_s();
 #if defined _WIN32 || !defined CXPLAT_SYSTEM_CRYPTO
     CXPLAT_CHACHA20_ALG_HANDLE = (EVP_CIPHER *)EVP_chacha20();
     CXPLAT_CHACHA20_POLY1305_ALG_HANDLE = (EVP_CIPHER *)EVP_chacha20_poly1305();
@@ -252,6 +256,8 @@ CxPlatCryptSupports(
         return CXPLAT_AES_256_GCM_ALG_HANDLE != NULL;
     case CXPLAT_AEAD_CHACHA20_POLY1305:
         return CXPLAT_CHACHA20_ALG_HANDLE != NULL;
+    case CXPLAT_AEAD_ROCCA_S:
+        return CXPLAT_ROCCA_S_ALG_HANDLE != NULL;
     default:
         return FALSE;
     }
@@ -279,6 +285,8 @@ CxPlatCryptUninitialize(
         EVP_CIPHER_free(CXPLAT_CHACHA20_POLY1305_ALG_HANDLE);
         CXPLAT_CHACHA20_POLY1305_ALG_HANDLE = NULL;
     }
+    EVP_CIPHER_free(CXPLAT_ROCCA_S_ALG_HANDLE);
+    CXPLAT_ROCCA_S_ALG_HANDLE = NULL;
 
     EVP_MAC_CTX_free(CXPLAT_HMAC_SHA256_CTX_HANDLE);
     CXPLAT_HMAC_SHA256_CTX_HANDLE = NULL;
@@ -296,6 +304,7 @@ CxPlatKeyCreate(
     _When_(AeadType == CXPLAT_AEAD_AES_128_GCM, _In_reads_(16))
     _When_(AeadType == CXPLAT_AEAD_AES_256_GCM, _In_reads_(32))
     _When_(AeadType == CXPLAT_AEAD_CHACHA20_POLY1305, _In_reads_(32))
+    _When_(AeadType == CXPLAT_AEAD_ROCCA_S, _In_reads_(32))
         const uint8_t* const RawKey,
     _Out_ CXPLAT_KEY** NewKey
     )
@@ -331,6 +340,9 @@ CxPlatKeyCreate(
             goto Exit;
         }
         Aead = CXPLAT_CHACHA20_POLY1305_ALG_HANDLE;
+        break;
+    case CXPLAT_AEAD_ROCCA_S:
+        Aead = CXPLAT_ROCCA_S_ALG_HANDLE;
         break;
     default:
         Status = QUIC_STATUS_NOT_SUPPORTED;
@@ -567,6 +579,7 @@ CxPlatHpKeyCreate(
     _When_(AeadType == CXPLAT_AEAD_AES_128_GCM, _In_reads_(16))
     _When_(AeadType == CXPLAT_AEAD_AES_256_GCM, _In_reads_(32))
     _When_(AeadType == CXPLAT_AEAD_CHACHA20_POLY1305, _In_reads_(32))
+    _When_(AeadType == CXPLAT_AEAD_ROCCA_S, _In_reads_(32))
         const uint8_t* const RawKey,
     _Out_ CXPLAT_HP_KEY** NewKey
     )
@@ -609,6 +622,9 @@ CxPlatHpKeyCreate(
             goto Exit;
         }
         Aead = CXPLAT_CHACHA20_ALG_HANDLE;
+        break;
+    case CXPLAT_AEAD_ROCCA_S:
+        Aead = CXPLAT_ROCCA_S_ALG_HANDLE;
         break;
     default:
         Status = QUIC_STATUS_NOT_SUPPORTED;

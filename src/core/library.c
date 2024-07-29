@@ -2333,11 +2333,13 @@ QuicLibraryGetCurrentStatelessRetryKey(
     int64_t ExpirationTime = StartTime + QUIC_STATELESS_RETRY_KEY_LIFETIME_MS;
 
     CXPLAT_KEY* NewKey;
-    uint8_t RawKey[CXPLAT_AEAD_AES_256_GCM_SIZE];
+    //uint8_t RawKey[CXPLAT_AEAD_AES_256_GCM_SIZE];
+    uint8_t RawKey[CXPLAT_AEAD_ROCCA_S_SIZE];
     CxPlatRandom(sizeof(RawKey), RawKey);
     QUIC_STATUS Status =
         CxPlatKeyCreate(
-            CXPLAT_AEAD_AES_256_GCM,
+            /*CXPLAT_AEAD_AES_256_GCM,*/
+            CXPLAT_AEAD_ROCCA_S,
             RawKey,
             &NewKey);
     if (QUIC_FAILED(Status)) {

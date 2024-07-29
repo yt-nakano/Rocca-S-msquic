@@ -988,7 +988,8 @@ QuicBindingProcessStatelessOperation(
         Token.Encrypted.OrigConnIdLength = RecvPacket->DestCidLen;
 
         uint8_t Iv[CXPLAT_MAX_IV_LENGTH];
-        if (MsQuicLib.CidTotalLength >= CXPLAT_IV_LENGTH) {
+        //if (MsQuicLib.CidTotalLength >= CXPLAT_IV_LENGTH) {
+        if ( (MsQuicLib.CidTotalLength >= CXPLAT_IV_LENGTH) && (QUIC_CID_MAX_LENGTH >= CXPLAT_IV_LENGTH) ) {
             CxPlatCopyMemory(Iv, NewDestCid, CXPLAT_IV_LENGTH);
             for (uint8_t i = CXPLAT_IV_LENGTH; i < MsQuicLib.CidTotalLength; ++i) {
                 Iv[i % CXPLAT_IV_LENGTH] ^= NewDestCid[i];

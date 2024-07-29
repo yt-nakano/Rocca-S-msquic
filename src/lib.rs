@@ -199,6 +199,7 @@ pub const ALLOWED_CIPHER_SUITE_NONE: AllowedCipherSuiteFlags = 0;
 pub const ALLOWED_CIPHER_SUITE_AES_128_GCM_SHA256: AllowedCipherSuiteFlags = 1;
 pub const ALLOWED_CIPHER_SUITE_AES_256_GCM_SHA384: AllowedCipherSuiteFlags = 2;
 pub const ALLOWED_CIPHER_SUITE_CHACHA20_POLY1305_SHA256: AllowedCipherSuiteFlags = 4;
+pub const ALLOWED_CIPHER_SUITE_ROCCA_S_SHA512: AllowedCipherSuiteFlags = 8;
 
 /// Modifies the default certificate hash store configuration.
 pub type CertificateHashStoreFlags = u32;
@@ -397,6 +398,7 @@ pub const CIPHER_ALGORITHM_NONE: CipherAlgorithm = 0;
 pub const CIPHER_ALGORITHM_AES_128: CipherAlgorithm = 26126;
 pub const CIPHER_ALGORITHM_AES_256: CipherAlgorithm = 26128;
 pub const CIPHER_ALGORITHM_CHACHA20: CipherAlgorithm = 26130;
+pub const CIPHER_ALGORITHM_ROCCA_S: CipherAlgorithm = 26132;
 
 pub type HashAlgorithm = u32;
 pub const HASH_ALGORITHM_NONE: HashAlgorithm = 0;
@@ -410,6 +412,7 @@ pub type CipherSuite = u32;
 pub const CIPHER_SUITE_TLS_AES_128_GCM_SHA256: CipherSuite = 4865;
 pub const CIPHER_SUITE_TLS_AES_256_GCM_SHA384: CipherSuite = 4866;
 pub const CIPHER_SUITE_TLS_CHACHA20_POLY1305_SHA256: CipherSuite = 4867;
+pub const CIPHER_SUITE_TLS_ROCCA_S_SHA512: CipherSuite = 4868;
 
 #[repr(C)]
 #[derive(Serialize, Deserialize, Debug, Copy, Clone)]

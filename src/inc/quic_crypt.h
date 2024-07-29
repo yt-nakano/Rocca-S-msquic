@@ -34,12 +34,14 @@ typedef struct CXPLAT_QEO_CONNECTION CXPLAT_QEO_CONNECTION;
 //
 // The overhead in a packet from encryption.
 //
-#define CXPLAT_ENCRYPTION_OVERHEAD 16
+//#define CXPLAT_ENCRYPTION_OVERHEAD 16
+#define CXPLAT_ENCRYPTION_OVERHEAD 32
 
 //
 // The length of the IV used in QUIC.
 //
-#define CXPLAT_IV_LENGTH 12
+//#define CXPLAT_IV_LENGTH 12
+#define CXPLAT_IV_LENGTH 16
 
 //
 // The maximum buffer length of the IV need by the platform layer.
@@ -62,7 +64,8 @@ typedef enum CXPLAT_AEAD_TYPE {
 
     CXPLAT_AEAD_AES_128_GCM       = 0,    // 16 byte key
     CXPLAT_AEAD_AES_256_GCM       = 1,    // 32 byte key
-    CXPLAT_AEAD_CHACHA20_POLY1305 = 2     // 32 byte key
+    CXPLAT_AEAD_CHACHA20_POLY1305 = 2,    // 32 byte key
+    CXPLAT_AEAD_ROCCA_S           = 3     // 32 byte key
 
 } CXPLAT_AEAD_TYPE;
 
@@ -70,7 +73,8 @@ typedef enum CXPLAT_AEAD_TYPE_SIZE {
 
     CXPLAT_AEAD_AES_128_GCM_SIZE       = 16,
     CXPLAT_AEAD_AES_256_GCM_SIZE       = 32,
-    CXPLAT_AEAD_CHACHA20_POLY1305_SIZE = 32
+    CXPLAT_AEAD_CHACHA20_POLY1305_SIZE = 32,
+    CXPLAT_AEAD_ROCCA_S_SIZE           = 32
 
 } CXPLAT_AEAD_TYPE_SIZE;
 
@@ -84,6 +88,7 @@ CxPlatKeyLength(
     case CXPLAT_AEAD_AES_128_GCM: return 16;
     case CXPLAT_AEAD_AES_256_GCM:
     case CXPLAT_AEAD_CHACHA20_POLY1305: return 32;
+    case CXPLAT_AEAD_ROCCA_S: return 32;
     default:
         CXPLAT_FRE_ASSERT(FALSE);
         return 0;
@@ -217,6 +222,7 @@ CxPlatKeyCreate(
     _When_(AeadType == CXPLAT_AEAD_AES_128_GCM, _In_reads_(16))
     _When_(AeadType == CXPLAT_AEAD_AES_256_GCM, _In_reads_(32))
     _When_(AeadType == CXPLAT_AEAD_CHACHA20_POLY1305, _In_reads_(32))
+    _When_(AeadType == CXPLAT_AEAD_ROCCA_S, _In_reads_(32))
         const uint8_t* const RawKey,
     _Out_ CXPLAT_KEY** Key
     );
@@ -272,14 +278,26 @@ QuicCryptoCombineIvAndPacketNumber(
     IvOut[1]  = IvIn[1];
     IvOut[2]  = IvIn[2];
     IvOut[3]  = IvIn[3];
-    IvOut[4]  = IvIn[4]  ^ PacketNumber[7];
-    IvOut[5]  = IvIn[5]  ^ PacketNumber[6];
-    IvOut[6]  = IvIn[6]  ^ PacketNumber[5];
-    IvOut[7]  = IvIn[7]  ^ PacketNumber[4];
-    IvOut[8]  = IvIn[8]  ^ PacketNumber[3];
-    IvOut[9]  = IvIn[9]  ^ PacketNumber[2];
-    IvOut[10] = IvIn[10] ^ PacketNumber[1];
-    IvOut[11] = IvIn[11] ^ PacketNumber[0];
+    //IvOut[4]  = IvIn[4]  ^ PacketNumber[7];
+    //IvOut[5]  = IvIn[5]  ^ PacketNumber[6];
+    //IvOut[6]  = IvIn[6]  ^ PacketNumber[5];
+    //IvOut[7]  = IvIn[7]  ^ PacketNumber[4];
+    //IvOut[8]  = IvIn[8]  ^ PacketNumber[3];
+    //IvOut[9]  = IvIn[9]  ^ PacketNumber[2];
+    //IvOut[10] = IvIn[10] ^ PacketNumber[1];
+    //IvOut[11] = IvIn[11] ^ PacketNumber[0];
+    IvOut[4]  = IvIn[4];
+    IvOut[5]  = IvIn[5];
+    IvOut[6]  = IvIn[6];
+    IvOut[7]  = IvIn[7];
+    IvOut[8]  = IvIn[8]  ^ PacketNumber[7];
+    IvOut[9]  = IvIn[9]  ^ PacketNumber[6];
+    IvOut[10] = IvIn[10] ^ PacketNumber[5];
+    IvOut[11] = IvIn[11] ^ PacketNumber[4];
+    IvOut[12] = IvIn[12] ^ PacketNumber[3];
+    IvOut[13] = IvIn[13] ^ PacketNumber[2];
+    IvOut[14] = IvIn[14] ^ PacketNumber[1];
+    IvOut[15] = IvIn[15] ^ PacketNumber[0];
 }
 
 //
@@ -329,6 +347,7 @@ CxPlatHpKeyCreate(
     _When_(AeadType == CXPLAT_AEAD_AES_128_GCM, _In_reads_(16))
     _When_(AeadType == CXPLAT_AEAD_AES_256_GCM, _In_reads_(32))
     _When_(AeadType == CXPLAT_AEAD_CHACHA20_POLY1305, _In_reads_(32))
+    _When_(AeadType == CXPLAT_AEAD_ROCCA_S, _In_reads_(32))
         const uint8_t* const RawKey,
     _Out_ CXPLAT_HP_KEY** Key
     );

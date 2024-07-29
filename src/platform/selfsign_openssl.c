@@ -408,7 +408,8 @@ CxPlatTlsGenerateSelfSignedCert(
             PEM_write_PrivateKey(
                 Fd,
                 PKey,
-                Password == NULL ? NULL : EVP_aes_128_ecb(),
+                /*Password == NULL ? NULL : EVP_aes_128_ecb(),*/
+                Password == NULL ? NULL : EVP_rocca_s(),
                 NULL,
                 0,
                 NULL,

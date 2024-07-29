@@ -54,6 +54,7 @@ MsQuic has several features that differentiates it from other QUIC implementatio
 
 # Documentation
 
+  * For **msquic-2.3+Rocca-S** branch, see the [Rocca-S docs](./docs/RoccaS.md).
   * For platform support details, see the [Platforms docs](./docs/Platforms.md).
   * For release details, see the [Release docs](./docs/Release.md).
   * For performance data, see the [Performance dashboard](https://aka.ms/msquicperformance).

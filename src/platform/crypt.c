@@ -155,7 +155,8 @@ CxPlatTlsDeriveInitialSecrets(
     // Expand client secret.
     //
     ClientInitial->Hash = CXPLAT_HASH_SHA256;
-    ClientInitial->Aead = CXPLAT_AEAD_AES_128_GCM;
+    //ClientInitial->Aead = CXPLAT_AEAD_AES_128_GCM;
+    ClientInitial->Aead = CXPLAT_AEAD_ROCCA_S;
     Status =
         CxPlatHkdfExpandLabel(
             DerivedHash,
@@ -171,7 +172,8 @@ CxPlatTlsDeriveInitialSecrets(
     // Expand server secret.
     //
     ServerInitial->Hash = CXPLAT_HASH_SHA256;
-    ServerInitial->Aead = CXPLAT_AEAD_AES_128_GCM;
+    //ServerInitial->Aead = CXPLAT_AEAD_AES_128_GCM;
+    ServerInitial->Aead = CXPLAT_AEAD_ROCCA_S;
     Status =
         CxPlatHkdfExpandLabel(
             DerivedHash,

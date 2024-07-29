@@ -108,6 +108,7 @@ namespace Microsoft.Quic
         AES_128_GCM_SHA256 = 0x1,
         AES_256_GCM_SHA384 = 0x2,
         CHACHA20_POLY1305_SHA256 = 0x4,
+        ROCCA_S_SHA512 = 0x8,
     }
 
     [System.Flags]
@@ -450,6 +451,7 @@ namespace Microsoft.Quic
         AES_128 = 0x660E,
         AES_256 = 0x6610,
         CHACHA20 = 0x6612,
+        ROCCA_S = 0x6614,
     }
 
     internal enum QUIC_HASH_ALGORITHM
@@ -469,6 +471,7 @@ namespace Microsoft.Quic
         TLS_AES_128_GCM_SHA256 = 0x1301,
         TLS_AES_256_GCM_SHA384 = 0x1302,
         TLS_CHACHA20_POLY1305_SHA256 = 0x1303,
+        TLS_ROCCA_S_SHA512 = 0x1306,
     }
 
     internal enum QUIC_CONGESTION_CONTROL_ALGORITHM

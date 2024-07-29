@@ -42,6 +42,7 @@ Abstract:
 #endif
 
 extern EVP_CIPHER *CXPLAT_AES_256_CBC_ALG_HANDLE;
+extern EVP_CIPHER *CXPLAT_ROCCA_S_ALG_HANDLE;
 
 uint16_t CxPlatTlsTPHeaderSize = 0;
 
@@ -159,11 +160,13 @@ typedef struct CXPLAT_TLS {
 //
 // Default list of Cipher used.
 //
-#define CXPLAT_TLS_DEFAULT_SSL_CIPHERS    "TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256"
+//#define CXPLAT_TLS_DEFAULT_SSL_CIPHERS    "TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256"
+#define CXPLAT_TLS_DEFAULT_SSL_CIPHERS    "TLS_ROCCA_S_SHA512"
 
 #define CXPLAT_TLS_AES_128_GCM_SHA256       "TLS_AES_128_GCM_SHA256"
 #define CXPLAT_TLS_AES_256_GCM_SHA384       "TLS_AES_256_GCM_SHA384"
 #define CXPLAT_TLS_CHACHA20_POLY1305_SHA256 "TLS_CHACHA20_POLY1305_SHA256"
+#define CXPLAT_TLS_ROCCA_S_SHA512           "TLS_ROCCA_S_SHA512"
 
 //
 // Default cert verify depth.
@@ -405,6 +408,10 @@ CxPlatTlsNegotiatedCiphers(
     case 0x03001303U: // TLS_CHACHA20_POLY1305_SHA256
         *AeadType = CXPLAT_AEAD_CHACHA20_POLY1305;
         *HashType = CXPLAT_HASH_SHA256;
+        break;
+    case 0x03001306U: // TLS_ROCCA_S_SHA512
+        *AeadType = CXPLAT_AEAD_ROCCA_S;
+        *HashType = CXPLAT_HASH_SHA512;
         break;
     default:
         CXPLAT_FRE_ASSERT(FALSE);
@@ -798,7 +805,8 @@ CxPlatTlsOnSessionTicketKeyNeeded(
             return -1; // Insufficient random
         }
         CxPlatCopyMemory(key_name, TicketKey->Id, 16);
-        EVP_EncryptInit_ex(ctx, CXPLAT_AES_256_CBC_ALG_HANDLE, NULL, TicketKey->Material, iv);
+        //EVP_EncryptInit_ex(ctx, CXPLAT_AES_256_CBC_ALG_HANDLE, NULL, TicketKey->Material, iv);
+        EVP_EncryptInit_ex(ctx, CXPLAT_ROCCA_S_ALG_HANDLE, NULL, TicketKey->Material, iv);
 
 #ifdef IS_OPENSSL_3
         params[0] =
@@ -837,7 +845,8 @@ CxPlatTlsOnSessionTicketKeyNeeded(
 #else
         HMAC_Init_ex(hctx, TicketKey->Material, 32, EVP_sha256(), NULL);
 #endif
-        EVP_DecryptInit_ex(ctx, CXPLAT_AES_256_CBC_ALG_HANDLE, NULL, TicketKey->Material, iv);
+        //EVP_DecryptInit_ex(ctx, CXPLAT_AES_256_CBC_ALG_HANDLE, NULL, TicketKey->Material, iv);
+        EVP_DecryptInit_ex(ctx, CXPLAT_ROCCA_S_ALG_HANDLE, NULL, TicketKey->Material, iv);
     }
 
     return 1; // This indicates that the ctx and hctx have been set and the
@@ -1039,7 +1048,8 @@ CxPlatTlsSecConfigCreate(
         if ((CredConfig->AllowedCipherSuites &
             (QUIC_ALLOWED_CIPHER_SUITE_AES_128_GCM_SHA256 |
             QUIC_ALLOWED_CIPHER_SUITE_AES_256_GCM_SHA384 |
-            QUIC_ALLOWED_CIPHER_SUITE_CHACHA20_POLY1305_SHA256)) == 0) {
+            QUIC_ALLOWED_CIPHER_SUITE_CHACHA20_POLY1305_SHA256 | 
+            QUIC_ALLOWED_CIPHER_SUITE_ROCCA_S_SHA512)) == 0) {
             QuicTraceEvent(
                 LibraryErrorStatus,
                 "[ lib] ERROR, %u, %s.",
@@ -1149,6 +1159,10 @@ CxPlatTlsSecConfigCreate(
             CipherSuiteStringLength += (uint8_t)sizeof(CXPLAT_TLS_CHACHA20_POLY1305_SHA256);
             AllowedCipherSuitesCount++;
         }
+        if (CredConfig->AllowedCipherSuites & QUIC_ALLOWED_CIPHER_SUITE_ROCCA_S_SHA512) {
+            CipherSuiteStringLength += (uint8_t)sizeof(CXPLAT_TLS_ROCCA_S_SHA512);
+            AllowedCipherSuitesCount++;
+        }
 
         CipherSuiteString = CXPLAT_ALLOC_NONPAGED(CipherSuiteStringLength, QUIC_POOL_TLS_CIPHER_SUITE_STRING);
         if (CipherSuiteString == NULL) {
@@ -1193,6 +1207,13 @@ CxPlatTlsSecConfigCreate(
                 CXPLAT_TLS_AES_128_GCM_SHA256,
                 sizeof(CXPLAT_TLS_AES_128_GCM_SHA256));
             CipherSuiteStringCursor += (uint8_t)sizeof(CXPLAT_TLS_AES_128_GCM_SHA256);
+        }
+        if (CredConfig->AllowedCipherSuites & QUIC_ALLOWED_CIPHER_SUITE_ROCCA_S_SHA512) {
+            CxPlatCopyMemory(
+                &CipherSuiteString[CipherSuiteStringCursor],
+                CXPLAT_TLS_ROCCA_S_SHA512,
+                sizeof(CXPLAT_TLS_ROCCA_S_SHA512));
+            CipherSuiteStringCursor += (uint8_t)sizeof(CXPLAT_TLS_ROCCA_S_SHA512);
         }
         CXPLAT_DBG_ASSERT(CipherSuiteStringCursor == CipherSuiteStringLength);
         CipherSuites = CipherSuiteString;
@@ -2262,6 +2283,11 @@ CxPlatMapCipherSuite(
             HandshakeInfo->CipherAlgorithm = QUIC_CIPHER_ALGORITHM_CHACHA20;
             HandshakeInfo->CipherStrength = 256; // TODO - Is this correct?
             HandshakeInfo->Hash = QUIC_HASH_ALGORITHM_SHA_256;
+            break;
+        case QUIC_CIPHER_SUITE_TLS_ROCCA_S_SHA512:
+            HandshakeInfo->CipherAlgorithm = QUIC_CIPHER_ALGORITHM_ROCCA_S;
+            HandshakeInfo->CipherStrength = 256;
+            HandshakeInfo->Hash = QUIC_HASH_ALGORITHM_SHA_512;
             break;
         default:
             Status = QUIC_STATUS_NOT_SUPPORTED;

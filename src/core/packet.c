@@ -342,7 +342,8 @@ QuicPacketGenerateRetryIntegrity(
 {
     CXPLAT_SECRET Secret;
     Secret.Hash = CXPLAT_HASH_SHA256;
-    Secret.Aead = CXPLAT_AEAD_AES_128_GCM;
+    //Secret.Aead = CXPLAT_AEAD_AES_128_GCM;
+    Secret.Aead = CXPLAT_AEAD_ROCCA_S;
     CxPlatCopyMemory(
         Secret.Secret,
         Version->RetryIntegritySecret,

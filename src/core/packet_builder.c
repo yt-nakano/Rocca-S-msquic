@@ -59,7 +59,8 @@ QuicPacketBuilderValidate(
         CXPLAT_DBG_ASSERT(Builder->Key->HeaderKey != NULL);
     }
 
-    CXPLAT_DBG_ASSERT(Builder->EncryptionOverhead <= 16);
+    //CXPLAT_DBG_ASSERT(Builder->EncryptionOverhead <= 16);
+    CXPLAT_DBG_ASSERT(Builder->EncryptionOverhead <= 32);
     if (Builder->SendData == NULL) {
         CXPLAT_DBG_ASSERT(Builder->Datagram == NULL);
     }

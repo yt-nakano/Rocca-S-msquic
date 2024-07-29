@@ -322,7 +322,8 @@ QuicPathUpdateQeo(
         CXPLAT_QEO_DECRYPT_FAILURE_ACTION_DROP,
         0, // KeyPhase
         0, // Reserved
-        CXPLAT_QEO_CIPHER_TYPE_AEAD_AES_256_GCM,
+        /*CXPLAT_QEO_CIPHER_TYPE_AEAD_AES_256_GCM,*/
+        CXPLAT_QEO_CIPHER_TYPE_AEAD_ROCCA_S,
         Connection->Send.NextPacketNumber,
         Path->Route.RemoteAddress,
         Path->DestCid->CID.Length,
@@ -333,7 +334,8 @@ QuicPathUpdateQeo(
         CXPLAT_QEO_DECRYPT_FAILURE_ACTION_DROP,
         0, // KeyPhase
         0, // Reserved
-        CXPLAT_QEO_CIPHER_TYPE_AEAD_AES_256_GCM,
+        /*CXPLAT_QEO_CIPHER_TYPE_AEAD_AES_256_GCM,*/
+        CXPLAT_QEO_CIPHER_TYPE_AEAD_ROCCA_S,
         0, // NextPacketNumber
         Path->Route.LocalAddress,
         SourceCid->CID.Length,
